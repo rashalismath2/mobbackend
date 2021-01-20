@@ -1,18 +1,18 @@
 <?php
 
-namespace App\Http\Controllers\Tutor;
+namespace App\Http\Controllers\Master;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 use Illuminate\Support\Facades\Auth;
-use App\Models\Tutor;
+use App\Models\Master;
 use Validator;
 
 class AuthController extends Controller
 {
     public function __construct() {
-        $this->middleware('auth:tutorapi', ['except' => ['login', 'register']]);
+        $this->middleware('auth:masterapi', ['except' => ['login', 'register']]);
     }
 
     public function login(Request $request){
@@ -25,7 +25,7 @@ class AuthController extends Controller
             return response()->json($validator->errors(), 422);
         }
         
-        if (! $token = auth("tutorapi")->attempt($validator->validated())) {
+        if (! $token = auth("masterapi")->attempt($validator->validated())) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
@@ -34,9 +34,10 @@ class AuthController extends Controller
 
     public function register(Request $request) {
         $validator = Validator::make($request->all(), [
-            'FirstName' => 'required|string|between:2,100',
-            'LastName' => 'required|string|between:2,100',
-            'email' => 'required|string|email|max:100|unique:users|unique:tutors',
+            'firstName' => 'required|string|between:2,100',
+            'lastName' => 'required|string|between:2,100',
+            'education' => 'required|string|between:2,100',
+            'email' => 'required|string|email|max:100|unique:users|unique:masters',
             'password' => 'required|string|min:6',
         ]);
 
@@ -44,7 +45,7 @@ class AuthController extends Controller
             return response()->json($validator->errors()->toJson(), 400);
         }
 
-        $user = Tutor::create(array_merge(
+        $user = Master::create(array_merge(
                     $validator->validated(),
                     ['password' => bcrypt($request->password)]
                 ));

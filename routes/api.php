@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 
 use App\Http\Controllers\User\AuthController;
-use App\Http\Controllers\Tutor\AuthController as TutorAuthController ;
+use App\Http\Controllers\Master\AuthController as TutorAuthController ;
 /*
 |--------------------------------------------------------------------------
 | API Routes

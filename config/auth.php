@@ -46,7 +46,7 @@ return [
             'provider' => 'users',
             'hash' => false,
         ],
-        'tutorapi' => [
+        'masterapi' => [
             'driver' => 'jwt',
             'provider' => 'tutors',
             'hash' => false,

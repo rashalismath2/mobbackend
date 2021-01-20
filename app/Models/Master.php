@@ -9,20 +9,18 @@ use Illuminate\Notifications\Notifiable;
 
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
-class Tutor extends Authenticatable implements JWTSubject
+class Master extends Authenticatable implements JWTSubject
 {
     use HasFactory, Notifiable;
 
+    public $timestamps = true;
     /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
     protected $fillable = [
-        'FirstName',
-        'LastName',
-        'email',
-        'password',
+
     ];
 
     /**
@@ -31,7 +29,7 @@ class Tutor extends Authenticatable implements JWTSubject
      * @var array
      */
     protected $hidden = [
-        'password'
+
     ];
 
 
