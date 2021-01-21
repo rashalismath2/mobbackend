@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class UpdateMasterTableWithEmailVerifiedAtColumn extends Migration
+class CreateVerificationCodesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,11 @@ class UpdateMasterTableWithEmailVerifiedAtColumn extends Migration
      */
     public function up()
     {
-        Schema::table('masters', function (Blueprint $table) {
-            $table->timestamp('email_verified_at')->nullable();
+        Schema::create('verification_codes', function (Blueprint $table) {
+            $table->id();
+            $table->string("email");
+            $table->integer("code");
+            $table->timestamps();
         });
     }
 
@@ -25,8 +28,6 @@ class UpdateMasterTableWithEmailVerifiedAtColumn extends Migration
      */
     public function down()
     {
-        Schema::table('masters', function (Blueprint $table) {
-            $table->dropColumn('email_verified_at');
-        });
+        Schema::dropIfExists('verification_codes');
     }
 }

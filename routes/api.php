@@ -33,9 +33,10 @@ Route::group([
     'prefix' => 'auth/master'
 ], function () {
     Route::post('/login', [TutorAuthController::class, 'login']);
-    Route::post('/register', [TutorAuthController::class, 'register']);
+    Route::patch('/register', [TutorAuthController::class, 'register']);
     Route::post('/logout', [TutorAuthController::class, 'logout']);
     Route::post('/refresh', [TutorAuthController::class, 'refresh']);
     Route::post('/activationcode', [TutorAuthController::class, 'generateactivationcode']);
+    Route::post('/verifyactivation', [TutorAuthController::class, 'verifyActivation']);
     Route::get('/user-profile', [TutorAuthController::class, 'userProfile']);    
 });

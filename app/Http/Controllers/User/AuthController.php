@@ -17,6 +17,7 @@ class AuthController extends Controller
         $this->middleware('auth:api', ['except' => ['login', 'register',"generateactivationcode"]]);
     }
 
+    // TODO- email verification | before send activation check if a user exist in user table
     public function generateactivationcode(Request $request){
 
         $validator = Validator::make($request->all(), [

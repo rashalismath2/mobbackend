@@ -9,6 +9,7 @@ use App\Events\EmailActivationRequest;
 
 use Illuminate\Support\Facades\Auth;
 use App\Models\Master;
+use App\Models\VerificationCode;
 use Validator;
 
 class AuthController extends Controller
@@ -17,8 +18,31 @@ class AuthController extends Controller
         $this->middleware('auth:masterapi', ['except' => [
                                             'login', 
                                             'register',
-                                            "generateactivationcode"
+                                            "generateactivationcode",
+                                            "verifyActivation"
                                             ]]);
+    }
+
+    public function verifyActivation(Request $request){
+ 
+        $validator = Validator::make($request->all(), [
+            'activationCode' => 'required|numeric',
+            'email' => 'required|email',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+
+        //TODO- schedule jobs to delete sent codes after a time
+        $codeEntry=VerificationCode::where("email",$request["email"])->latest()->first();
+        if($codeEntry->code==(int)$request["activationCode"]){
+            return response()->json(["message"=>"email verified"], 200);
+        }
+        else{
+            return response()->json(["message"=>"code does not match"], 401);
+        }
+
     }
 
     public function generateactivationcode(Request $request){
@@ -31,11 +55,21 @@ class AuthController extends Controller
             return response()->json($validator->errors(), 422);
         }
 
+        $user = Master::where('email', '=', $request->email)->first();
+        if ($user != null) {
+            return response()->json(["message"=>"email already exists"], 409);
+        }
+
         $code=rand(100000,999999);
 
         EmailActivationRequest::dispatch($request->email,$code);
 
-        return response()->json(["activation-code"=>$code],200);
+        $codeEntry=new VerificationCode();
+        $codeEntry->code=$code;
+        $codeEntry->email=$request->email;
+        $codeEntry->save();
+
+        return response()->json(["message"=>"Activation code has been sent"],200);
     }
 
     public function login(Request $request){
@@ -57,6 +91,8 @@ class AuthController extends Controller
     }
 
     public function register(Request $request) {
+        error_log($request->hasFile("profile_picture"));
+        error_log($request["profile_picture"]);
         $validator = Validator::make($request->all(), [
             'firstName' => 'required|string|between:2,100',
             'lastName' => 'required|string|between:2,100',
