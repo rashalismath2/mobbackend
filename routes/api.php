@@ -29,11 +29,12 @@ Route::group([
 
 
 Route::group([
-    'prefix' => 'auth/tutor'
+    'prefix' => 'auth/master'
 ], function () {
     Route::post('/login', [TutorAuthController::class, 'login']);
     Route::post('/register', [TutorAuthController::class, 'register']);
     Route::post('/logout', [TutorAuthController::class, 'logout']);
     Route::post('/refresh', [TutorAuthController::class, 'refresh']);
+    Route::post('/activationcode', [TutorAuthController::class, 'generateactivationcode']);
     Route::get('/user-profile', [TutorAuthController::class, 'userProfile']);    
 });

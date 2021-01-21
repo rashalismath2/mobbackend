@@ -48,7 +48,7 @@ return [
         ],
         'masterapi' => [
             'driver' => 'jwt',
-            'provider' => 'tutors',
+            'provider' => 'masters',
             'hash' => false,
         ],
     ],
@@ -75,9 +75,9 @@ return [
             'driver' => 'eloquent',
             'model' => App\Models\User::class,
         ],
-        'tutors' => [
+        'masters' => [
             'driver' => 'eloquent',
-            'model' => App\Models\Tutor::class,
+            'model' => App\Models\Master::class,
         ],
 
         // 'users' => [

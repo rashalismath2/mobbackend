@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Master;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
+use App\Events\EmailActivationRequest;
+
 use Illuminate\Support\Facades\Auth;
 use App\Models\Master;
 use Validator;
@@ -12,10 +14,32 @@ use Validator;
 class AuthController extends Controller
 {
     public function __construct() {
-        $this->middleware('auth:masterapi', ['except' => ['login', 'register']]);
+        $this->middleware('auth:masterapi', ['except' => [
+                                            'login', 
+                                            'register',
+                                            "generateactivationcode"
+                                            ]]);
+    }
+
+    public function generateactivationcode(Request $request){
+
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+
+        $code=rand(100000,999999);
+
+        EmailActivationRequest::dispatch($request->email,$code);
+
+        return response()->json(["activation-code"=>$code],200);
     }
 
     public function login(Request $request){
+
     	$validator = Validator::make($request->all(), [
             'email' => 'required|email',
             'password' => 'required|string|min:6',

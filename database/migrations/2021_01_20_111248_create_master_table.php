@@ -13,7 +13,7 @@ class CreateMasterTable extends Migration
      */
     public function up()
     {
-        Schema::create('master', function (Blueprint $table) {
+        Schema::create('masters', function (Blueprint $table) {
             $table->id();
             $table->string("firstName");
             $table->string("laststName");
