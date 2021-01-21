@@ -20,7 +20,11 @@ class Master extends Authenticatable implements JWTSubject
      * @var array
      */
     protected $fillable = [
-
+        "firstName",
+        "lastName",
+        "email",
+        "education",
+        "profile_img"
     ];
 
     /**
@@ -29,7 +33,7 @@ class Master extends Authenticatable implements JWTSubject
      * @var array
      */
     protected $hidden = [
-
+        "password"
     ];
 
     protected $casts = [

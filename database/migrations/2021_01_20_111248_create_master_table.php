@@ -16,10 +16,11 @@ class CreateMasterTable extends Migration
         Schema::create('masters', function (Blueprint $table) {
             $table->id();
             $table->string("firstName");
-            $table->string("laststName");
+            $table->string("lastName");
             $table->string("email")->unique();
             $table->string("password");
             $table->string("education");
+            $table->text("profile_img")->nullable();
             $table->timestamps();
         });
     }

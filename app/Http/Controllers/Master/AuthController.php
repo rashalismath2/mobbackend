@@ -63,20 +63,28 @@ class AuthController extends Controller
             'education' => 'required|string|between:2,100',
             'email' => 'required|string|email|max:100|unique:users|unique:masters',
             'password' => 'required|string|min:6',
+            'profile_picture' => 'mimes:jpeg,jpg,png',
         ]);
 
         if($validator->fails()){
             return response()->json($validator->errors()->toJson(), 400);
         }
 
-        $user = Master::create(array_merge(
-                    $validator->validated(),
-                    ['password' => bcrypt($request->password)]
-                ));
+        $profile_img=$this->uploadPicture($request);
+
+        $master=new Master();
+        $master->firstName=$request->firstName;
+        $master->lastName=$request->lastName;
+        $master->email=$request->email;
+        $master->profile_img=$profile_img;
+        $master->education=$request->education;
+        $master->password= bcrypt($request->password);
+
+        $master->save();
 
         return response()->json([
             'message' => 'User successfully registered',
-            'user' => $user
+            'user' => $master
         ], 201);
     }
 
@@ -106,4 +114,18 @@ class AuthController extends Controller
         ]);
     }
     
+    private function uploadPicture($request){
+        if($request->hasFile("profile_picture")){
+            $fileNameWithExtenstion=$request->file("profile_picture")->getClientOriginalName();
+            $fileName=pathinfo($fileNameWithExtenstion,PATHINFO_FILENAME);
+            $extension=$request->file("profile_picture")->getClientOriginalExtension();
+            $fileNameToStore=$fileName."_".time().".".$extension;
+            $path=$request->file("profile_picture")->storeAs("public/masters/profilpics",$fileNameToStore);
+    
+            return $fileNameToStore;
+        }
+        else{
+            return null;
+        }
+    }
 }
