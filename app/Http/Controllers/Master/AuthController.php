@@ -91,8 +91,7 @@ class AuthController extends Controller
     }
 
     public function register(Request $request) {
-        error_log($request->hasFile("profile_picture"));
-        error_log($request["profile_picture"]);
+
         $validator = Validator::make($request->all(), [
             'firstName' => 'required|string|between:2,100',
             'lastName' => 'required|string|between:2,100',
@@ -145,9 +144,8 @@ class AuthController extends Controller
         return response()->json([
             'access_token' => $token,
             'token_type' => 'bearer',
-            'expires_in' => auth()->factory()->getTTL() * 60,
-            'user' => auth()->user()
-        ]);
+            'expires_in' => auth()->factory()->getTTL() * 60
+        ],200);
     }
     
     private function uploadPicture($request){
