@@ -9,6 +9,8 @@ use Illuminate\Notifications\Notifiable;
 
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
+use App\Models\GroupsStudents;
+
 class User extends Authenticatable implements JWTSubject
 {
     use HasFactory, Notifiable;
@@ -20,7 +22,11 @@ class User extends Authenticatable implements JWTSubject
      * @var array
      */
     protected $fillable = [
-
+        "firstName",
+        "lastName",
+        "grade",
+        "school",
+        "email",
     ];
 
     /**
@@ -29,7 +35,7 @@ class User extends Authenticatable implements JWTSubject
      * @var array
      */
     protected $hidden = [
-
+        "password"
     ];
 
     /**
@@ -55,5 +61,8 @@ class User extends Authenticatable implements JWTSubject
         return [];
     } 
 
+    public function GroupsStudents(){
+        return $this->hasMany(GroupsStudents::class,"student_id","id");
+    }
 
 }

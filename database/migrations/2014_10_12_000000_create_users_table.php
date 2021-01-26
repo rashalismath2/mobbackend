@@ -19,8 +19,9 @@ class CreateUsersTable extends Migration
             $table->string('lastName');
             $table->string('email')->unique();
             $table->string('password');
-            $table->string('class');
-            $table->text('profile_img');
+            $table->string('grade');
+            $table->string('school');
+            $table->text('profile_img')->nullable();
             $table->timestamps();
         });
     }

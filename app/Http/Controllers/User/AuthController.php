@@ -56,19 +56,30 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'firstName' => 'required|string|between:2,100',
             'lastName' => 'required|string|between:2,100',
-            'class' => 'required|string|between:1,100',
+            'grade' => 'required|string|between:1,100',
+            'school' => 'required|string|between:1,100',
             'email' => 'required|string|email|max:100|unique:users|unique:masters',
             'password' => 'required|string|min:6',
+            'profile_picture' => 'mimes:jpeg,jpg,png',
         ]);
 
         if($validator->fails()){
             return response()->json($validator->errors()->toJson(), 400);
         }
 
-        $user = User::create(array_merge(
-                    $validator->validated(),
-                    ['password' => bcrypt($request->password)]
-                ));
+        $profile_img=$this->uploadPicture($request);
+
+        $user=new User();
+        $user->firstName=$request->firstName;
+        $user->lastName=$request->lastName;
+        $user->email=$request->email;
+        $user->profile_img=$profile_img;
+        $user->grade=$request->grade;
+        $user->school=$request->school;
+        $user->password= bcrypt($request->password);
+
+        $user->save();
+
 
         return response()->json([
             'message' => 'User successfully registered',
@@ -100,6 +111,21 @@ class AuthController extends Controller
             'expires_in' => auth()->factory()->getTTL() * 60,
             'user' => auth()->user()
         ]);
+    }
+
+    private function uploadPicture($request){
+        if($request->hasFile("profile_picture")){
+            $fileNameWithExtenstion=$request->file("profile_picture")->getClientOriginalName();
+            $fileName=pathinfo($fileNameWithExtenstion,PATHINFO_FILENAME);
+            $extension=$request->file("profile_picture")->getClientOriginalExtension();
+            $fileNameToStore=$fileName."_".time().".".$extension;
+            $path=$request->file("profile_picture")->storeAs("public/users/profilpics",$fileNameToStore);
+    
+            return $fileNameToStore;
+        }
+        else{
+            return null;
+        }
     }
     
 }
