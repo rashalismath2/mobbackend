@@ -5,10 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-use App\Modeles\Master;
-use App\Modeles\GroupsStudents;
+use App\Models\Master;
+use App\Models\GroupsStudents;
 
-class Groups extends Model
+class Group extends Model
 {
     use HasFactory;
 
@@ -19,6 +19,6 @@ class Groups extends Model
     }
 
     public function GroupsStudents(){
-        return $this->hasMany(GroupsStudents::class);
+        return $this->hasMany(GroupsStudents::class,"group_id","id");
     }
 }

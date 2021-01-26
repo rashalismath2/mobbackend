@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 use App\Models\Group;
 use App\Models\User;
+use App\Models\Master;
 
 class GroupsStudents extends Model
 {
@@ -14,10 +15,11 @@ class GroupsStudents extends Model
 
     public $timestamps = true;
 
-    public function groups(){
+    public function group(){
         return $this->belongsTo(Group::class, 'group_id', 'id');
     }
-    public function students(){
+    public function student(){
         return $this->belongsTo(User::class, 'student_id', 'id');
     }
+
 }

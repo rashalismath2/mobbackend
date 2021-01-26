@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\User\AuthController;
 use App\Http\Controllers\Master\AuthController as TutorAuthController ;
+use App\Http\Controllers\Master\GroupController ;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -39,4 +40,10 @@ Route::group([
     Route::post('/activationcode', [TutorAuthController::class, 'generateactivationcode']);
     Route::post('/verifyactivation', [TutorAuthController::class, 'verifyActivation']);
     Route::get('/user-profile', [TutorAuthController::class, 'userProfile']);    
+});
+Route::group([
+    'prefix' => 'master'
+], function () {
+    Route::get('/groups', [GroupController::class, 'getAllGroups']);
+   
 });
