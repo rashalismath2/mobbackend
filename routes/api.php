@@ -45,5 +45,6 @@ Route::group([
     'prefix' => 'master'
 ], function () {
     Route::get('/groups', [GroupController::class, 'getAllGroups']);
+    Route::put('/groups', [GroupController::class, 'updateGroup']);
    
 });
