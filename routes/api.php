@@ -46,5 +46,6 @@ Route::group([
 ], function () {
     Route::get('/groups', [GroupController::class, 'getAllGroups']);
     Route::put('/groups', [GroupController::class, 'updateGroup']);
+    Route::patch('/groups/{id}', [GroupController::class, 'updateStudentsStatus']);
    
 });
