@@ -26,7 +26,6 @@ class RequestFactory extends Factory
     {
         return [
             'student_id' => User::factory(),
-            'group_id' =>  Group::factory(),
             'accepted' => $this->faker->boolean($chanceOfGettingTrue = 50),
             'declined' => $this->faker->boolean($chanceOfGettingTrue = 50),
         ];

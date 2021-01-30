@@ -27,7 +27,6 @@ class GroupsStudentsFactory extends Factory
     {
         return [
             'student_id' => User::factory(),
-            'group_id' => Group::factory(),
             'group_student_id' => Str::random(10),
             'allowed' => $this->faker->boolean($chanceOfGettingTrue = 50),
             'user_removed' => $this->faker->boolean($chanceOfGettingTrue = 50),

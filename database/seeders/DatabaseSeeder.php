@@ -22,18 +22,20 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
 
-
-        $groups = Group::factory()
-                ->count(20)
+        for ($i=0; $i < 21; $i++) { 
+                $masters = Master::factory()
+                ->state(new Sequence(
+                        ['gender' => 'male'],
+                        ['gender' => 'female'],
+                    ))
                 ->create();
-
-        $requests = Request::factory()
-                ->count(20)
-                ->create();
-
-        $groupsStudents = GroupsStudents::factory()
-                ->count(20)
-                ->create();
+        
+                $groups = Group::factory()
+                        ->has(Request::factory()->count(20))
+                        ->has(GroupsStudents::factory()->count(20))
+                        ->for($masters)
+                        ->create();
+        }
         
     }
 }

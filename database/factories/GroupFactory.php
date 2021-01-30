@@ -6,7 +6,6 @@ use App\Models\Group;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
-use App\Models\Master;
 
 class GroupFactory extends Factory
 {
@@ -25,7 +24,6 @@ class GroupFactory extends Factory
     public function definition()
     {
         return [
-            'master_id' => Master::factory(),
             'groupName' =>Str::random(10).$this->faker->randomDigit(),
             'description' => $this->faker->realText($maxNbChars = 100, $indexSize = 2)
         ];
