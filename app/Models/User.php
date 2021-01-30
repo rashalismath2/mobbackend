@@ -10,6 +10,7 @@ use Illuminate\Notifications\Notifiable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
 use App\Models\GroupsStudents;
+use App\Models\Request;
 
 class User extends Authenticatable implements JWTSubject
 {
@@ -63,6 +64,9 @@ class User extends Authenticatable implements JWTSubject
 
     public function GroupsStudents(){
         return $this->hasMany(GroupsStudents::class,"student_id","id");
+    }
+    public function Requests(){
+        return $this->hasMany(Request::class,"student_id","id");
     }
 
 }

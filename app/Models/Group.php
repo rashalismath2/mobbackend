@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 use App\Models\Master;
 use App\Models\GroupsStudents;
+use App\Models\Request;
 
 class Group extends Model
 {
@@ -20,5 +21,8 @@ class Group extends Model
 
     public function GroupsStudents(){
         return $this->hasMany(GroupsStudents::class,"group_id","id");
+    }
+    public function Requests(){
+        return $this->hasMany(Request::class,"group_id","id");
     }
 }

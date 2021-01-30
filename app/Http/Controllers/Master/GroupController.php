@@ -18,6 +18,27 @@ class GroupController extends Controller
         $this->middleware('auth:masterapi');
     }
 
+    public function getStudentsByGroupId(Request $request,$id){
+        $students=GroupsStudents::where("group_id",$id)->with("student")->get();
+
+        return response()->json($students,200);
+    }
+    public function deleteStudentInTheGroup(Request $request,MessageBag $message_bag,$id,$stdId){
+        
+        try {
+            $student=GroupsStudents::where("group_id",$id)
+                                ->where("student_id",$stdId)->first();
+            $student->user_removed=true;
+            $student->update();
+        }
+        catch (Exception $e) {
+            $message_bag->add("errors",$e->getMessage());
+            return response()->json($message_bag,500);
+        }
+
+        return response()->json(["Message"=>"User was removed"],200);
+    }
+
     public function updateStudentsStatus(Request $request,MessageBag $message_bag){
         $validator = Validator::make($request->all(), [
             'students' => "required|array|min:1",
@@ -44,9 +65,10 @@ class GroupController extends Controller
                 $stdGroups->allowed=$student["allowed"];
                 $stdGroups->update();
                 
-                } catch (Exception $e) {
-                $message_bag->add("errors",$e->getMessage());
-                return response()->json($message_bag,500);
+                } 
+                catch (Exception $e) {
+                    $message_bag->add("errors",$e->getMessage());
+                    return response()->json($message_bag,500);
                 }
         }
 
@@ -79,7 +101,15 @@ class GroupController extends Controller
 
         $groups=Group::where("master_id",auth()->user()->id)
             ->with("GroupsStudents.student")
-            ->get();
+                ->get();
+
+        // $groups=Group::where("master_id",auth()->user()->id)
+        //         ->whereHas("GroupsStudents",function($query)
+        //                 {
+        //                     $query->where("user_removed",false);
+        //                 })
+        //         ->with("GroupsStudents.student")
+        //         ->get();
 
         $newGroups=array();
         foreach ($groups as $key => $group) {
@@ -89,13 +119,15 @@ class GroupController extends Controller
             $newGroup["allowed_std_count"]=0;
             $newGroup["not_allowed_std_count"]=0;
             foreach ($group["GroupsStudents"] as $GrpStdKey => $GrpStdValue) {
-                if($GrpStdValue->allowed==0){
-                    array_push($newGroup["students"],$GrpStdValue);
-                    $newGroup["not_allowed_std_count"]=$newGroup["not_allowed_std_count"]+1;
-                }
-                else{
-                    array_push($newGroup["students"],$GrpStdValue);
-                    $newGroup["allowed_std_count"]=$newGroup["allowed_std_count"]+1;
+                if($GrpStdValue->user_removed==0){
+                    if($GrpStdValue->allowed==0){
+                        array_push($newGroup["students"],$GrpStdValue);
+                        $newGroup["not_allowed_std_count"]=$newGroup["not_allowed_std_count"]+1;
+                    }
+                    else{
+                        array_push($newGroup["students"],$GrpStdValue);
+                        $newGroup["allowed_std_count"]=$newGroup["allowed_std_count"]+1;
+                    }
                 }
             }
             array_push($newGroups,$newGroup);

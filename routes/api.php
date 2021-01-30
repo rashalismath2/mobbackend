@@ -5,8 +5,12 @@ use Illuminate\Support\Facades\Route;
 
 
 use App\Http\Controllers\User\AuthController;
+use App\Http\Controllers\User\RequestController as UserRequestController ;
+
+
 use App\Http\Controllers\Master\AuthController as TutorAuthController ;
 use App\Http\Controllers\Master\GroupController ;
+use App\Http\Controllers\Master\RequestController as MasterRequestController ;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -29,6 +33,13 @@ Route::group([
     Route::get('/user-profile', [AuthController::class, 'userProfile']);    
 });
 
+Route::group([
+    'prefix' => 'user'
+], function () {
+    Route::post('/request', [UserRequestController::class, 'create']);
+
+});
+
 
 Route::group([
     'prefix' => 'auth/master'
@@ -47,5 +58,13 @@ Route::group([
     Route::get('/groups', [GroupController::class, 'getAllGroups']);
     Route::put('/groups', [GroupController::class, 'updateGroup']);
     Route::patch('/groups/{id}', [GroupController::class, 'updateStudentsStatus']);
+    Route::get('/groups/{id}/students', [GroupController::class, 'getStudentsByGroupId']);
+    Route::delete('/groups/{id}/students/{stdId}', [GroupController::class, 'deleteStudentInTheGroup']);
    
+
+    Route::get('/request', [MasterRequestController::class, 'getAllRequests']);
+    Route::post('/request/accept', [MasterRequestController::class, 'acceptRequest']);
+    Route::post('/request/validate/studentid', [MasterRequestController::class, 'validateStudentId']);
+
+
 });
