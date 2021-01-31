@@ -30,11 +30,13 @@ class DatabaseSeeder extends Seeder
                     ))
                 ->create();
         
-                $groups = Group::factory()
+                for ($i=0; $i < 5; $i++) { 
+                    $groups = Group::factory()
                         ->has(Request::factory()->count(20))
                         ->has(GroupsStudents::factory()->count(20))
                         ->for($masters)
                         ->create();
+                }
         }
         
     }

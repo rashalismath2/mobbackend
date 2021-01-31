@@ -26,6 +26,20 @@ class RequestController extends Controller
             return response()->json($validator->errors(),422);
         }
 
+        $reqAlreadyExists=ModelRequest::where("student_id",auth()->user()->id)
+                        ->where("group_id",$request->group_id)
+                        ->where("declined",1)
+                        ->first();
+        
+        //if the user request was already had been cancelled by master once
+        if($reqAlreadyExists!=null){
+            $reqAlreadyExists->accepted=0;
+            $reqAlreadyExists->declined=0;
+            $reqAlreadyExists->update();
+            
+            return response()->json(["Message"=>"record updated"],200);
+        }
+
         $req=new ModelRequest();
         $req->student_id=auth()->user()->id;
         $req->group_id=$request->group_id;

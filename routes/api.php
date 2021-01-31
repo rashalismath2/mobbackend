@@ -56,14 +56,21 @@ Route::group([
     'prefix' => 'master'
 ], function () {
     Route::get('/groups', [GroupController::class, 'getAllGroups']);
+    Route::post('/groups', [GroupController::class, 'createNewGroup']);
     Route::put('/groups', [GroupController::class, 'updateGroup']);
+
     Route::patch('/groups/{id}', [GroupController::class, 'updateStudentsStatus']);
+    Route::delete('/groups/{id}', [GroupController::class, 'deleteGroup']);
+
     Route::get('/groups/{id}/students', [GroupController::class, 'getStudentsByGroupId']);
-    Route::delete('/groups/{id}/students/{stdId}', [GroupController::class, 'deleteStudentInTheGroup']);
+    
+    Route::delete('/groups/{group_id}/students/{student_id}', [GroupController::class, 'deleteStudentInTheGroup']);
    
 
     Route::get('/request', [MasterRequestController::class, 'getAllRequests']);
     Route::post('/request/accept', [MasterRequestController::class, 'acceptRequest']);
+    Route::delete('/request/decline', [MasterRequestController::class, 'deleteRequest']);
+
     Route::post('/request/validate/studentid', [MasterRequestController::class, 'validateStudentId']);
 
 
