@@ -33,7 +33,7 @@ class Master extends Authenticatable implements JWTSubject
      * @var array
      */
     protected $hidden = [
-        "password"
+        "password","email"
     ];
 
     protected $casts = [
