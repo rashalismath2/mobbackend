@@ -9,6 +9,9 @@ use App\Models\Master;
 use App\Models\GroupsStudents;
 use App\Models\Request;
 
+use App\Models\HomeworksGroups;
+
+
 class Group extends Model
 {
     use HasFactory;
@@ -24,5 +27,9 @@ class Group extends Model
     }
     public function Requests(){
         return $this->hasMany(Request::class,"group_id","id");
+    }
+
+    public function HomeworkGroups(){
+        return $this->hasMany(HomeworksGroups::class,"group_id","id");
     }
 }

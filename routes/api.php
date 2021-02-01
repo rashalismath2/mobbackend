@@ -11,6 +11,7 @@ use App\Http\Controllers\User\RequestController as UserRequestController ;
 use App\Http\Controllers\Master\AuthController as TutorAuthController ;
 use App\Http\Controllers\Master\GroupController ;
 use App\Http\Controllers\Master\RequestController as MasterRequestController ;
+use App\Http\Controllers\Master\HomeworkController as MasterHomeworkController ;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -53,25 +54,33 @@ Route::group([
     Route::get('/user-profile', [TutorAuthController::class, 'userProfile']);    
 });
 Route::group([
-    'prefix' => 'master'
+    'prefix' => 'master/groups'
 ], function () {
-    Route::get('/groups', [GroupController::class, 'getAllGroups']);
-    Route::post('/groups', [GroupController::class, 'createNewGroup']);
-    Route::put('/groups', [GroupController::class, 'updateGroup']);
+    Route::get('/', [GroupController::class, 'getAllGroups']);
+    Route::post('/', [GroupController::class, 'createNewGroup']);
+    Route::put('/', [GroupController::class, 'updateGroup']);
 
-    Route::patch('/groups/{id}', [GroupController::class, 'updateStudentsStatus']);
-    Route::delete('/groups/{id}', [GroupController::class, 'deleteGroup']);
+    Route::patch('/{id}', [GroupController::class, 'updateStudentsStatus']);
+    Route::delete('/{id}', [GroupController::class, 'deleteGroup']);
 
-    Route::get('/groups/{id}/students', [GroupController::class, 'getStudentsByGroupId']);
+    Route::get('/{id}/students', [GroupController::class, 'getStudentsByGroupId']);
     
-    Route::delete('/groups/{group_id}/students/{student_id}', [GroupController::class, 'deleteStudentInTheGroup']);
+    Route::delete('/{group_id}/students/{student_id}', [GroupController::class, 'deleteStudentInTheGroup']);
    
+});
 
-    Route::get('/request', [MasterRequestController::class, 'getAllRequests']);
-    Route::post('/request/accept', [MasterRequestController::class, 'acceptRequest']);
-    Route::delete('/request/decline', [MasterRequestController::class, 'deleteRequest']);
+Route::group([
+    'prefix' => 'master/request'
+], function () {
+    Route::get('/', [MasterRequestController::class, 'getAllRequests']);
+    Route::post('/accept', [MasterRequestController::class, 'acceptRequest']);
+    Route::delete('/decline', [MasterRequestController::class, 'deleteRequest']);
 
-    Route::post('/request/validate/studentid', [MasterRequestController::class, 'validateStudentId']);
+    Route::post('/validate/studentid', [MasterRequestController::class, 'validateStudentId']);
 
-
+});
+Route::group([
+    'prefix' => 'master/homeworks'
+], function () {
+    Route::post('/', [MasterHomeworkController::class, 'createHomeWork']);
 });
