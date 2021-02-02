@@ -33,6 +33,7 @@ class HomeworkFactory extends Factory
             'startTime' => Carbon::now(),
             'endTime' => Carbon::now()->addMinutes(60),
             'status' => "queued",
+            'number_of_questions' => $this->faker->randomDigit(),
         ];
     }
 }

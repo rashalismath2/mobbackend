@@ -23,6 +23,7 @@ class CreateHomeworkTable extends Migration
             $table->time("startTime")->nullable();
             $table->time("endTime")->nullable();   
             $table->string("status")->default("queued");
+            $table->interger("number_of_questions");
             $table->timestamps();
         });
     }
