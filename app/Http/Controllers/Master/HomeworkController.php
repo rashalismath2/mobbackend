@@ -15,11 +15,93 @@ use App\Models\Group;
 use App\Models\HomeworkAttachments;
 use App\Models\HomeworksGroups;
 
+use Illuminate\Support\Carbon;
+
 
 class HomeworkController extends Controller
 {
     public function __construct(){
         $this->middleware('auth:masterapi');
+    }
+
+    public function getAllHomeworks(Request $request,MessageBag $message_bag){
+
+        $homeworks=Homework::whereHas("HomeworkGroups.group",function($query){
+                            $query->where("master_id",auth()->user()->id);
+                        })
+                        ->get();
+
+        return response()->json($homeworks,200);
+    }
+    public function startHomework(Request $request,MessageBag $message_bag){
+        //homework status shouldnt be on,or finished
+        $validator=Validator::make($request->all(),[
+            "homework_id"=>"required|numeric|exists:homeworks,id",
+            "started_at"=>"required|date",
+        ]);
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+
+ 
+        $homework=Homework::find($request->homework_id);
+        //homework must be created by the same master
+        try {
+            if($homework->HomeworkGroups[0]->group->master_id!=auth()->user()->id){
+                throw new \Exception("Auth user failed");
+            }
+        } catch (Exception $e) {
+            $message_bag->add("errors","Requesting homework does not belongs to authenticated user.!");
+            return response()->json($message_bag,422);
+        }
+
+            
+        if($homework->status=="queued"){
+            $homework->status="on";
+            
+            $homework->started_at=Carbon::parse($request->started_at);
+            $homework->update();
+            return response()->json(["Message"=>"Homework started"],200);
+        }
+        else{
+            $message_bag->add("error","Homework is not on the proper status");
+            return response()->json($message_bag, 422);
+        }
+
+    }
+    public function endHomework(Request $request,MessageBag $message_bag){
+        //homework status shouldnt be queued,or finished
+        $validator=Validator::make($request->all(),[
+            "homework_id"=>"required|numeric|exists:homeworks,id",
+            "ended_at"=>"required|date",
+        ]);
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+
+        $homework=Homework::find($request->homework_id);
+        //homework must be created by the same master
+        try {
+            if($homework->HomeworkGroups[0]->group->master_id!=auth()->user()->id){
+                throw new \Exception("Auth user failed");
+            }
+        } catch (Exception $e) {
+            $message_bag->add("errors","Requesting homework does not belongs to authenticated user.!");
+            return response()->json($message_bag,422);
+        }
+
+        if($homework->status=="on"){
+            $homework->status="ended";
+            
+            $homework->ended_at=Carbon::parse($request->ended_at);
+            $homework->update();
+            return response()->json(["Message"=>"Homework ended"],200);
+        }
+        else{
+            $message_bag->add("error","Homework is not on the proper status");
+            return response()->json($message_bag, 422);
+        }
+
     }
 
     public function createHomeWork(Request $request,MessageBag $message_bag){
@@ -34,6 +116,7 @@ class HomeworkController extends Controller
             "endTime"=>"required",
             "fileCount"=>"required|numeric",
             "groupCount"=>"required|numeric",
+            "number_of_questions"=>"required|numeric",
         ]);
 
        
@@ -125,7 +208,7 @@ class HomeworkController extends Controller
             }
             
 
-            $allowedExtenstion = array("jpg", "jpeg", "pdf", "doc","docx","xls","pptx");
+            $allowedExtenstion = array("jpg","png","jpeg", "pdf", "doc","docx","xls","pptx");
 
             try {
                 if(!in_array($extension,$allowedExtenstion)){

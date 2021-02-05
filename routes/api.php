@@ -23,6 +23,11 @@ use App\Http\Controllers\Master\HomeworkController as MasterHomeworkController ;
 |
 */
 
+
+Route::post('master/files', function (Request $request) {
+    error_log(print_r($request->all(), true));
+});
+
 Route::group([
     'prefix' => 'auth/user'
 ], function () {
@@ -82,5 +87,8 @@ Route::group([
 Route::group([
     'prefix' => 'master/homeworks'
 ], function () {
+    Route::get('/', [MasterHomeworkController::class, 'getAllHomeworks']);
     Route::post('/', [MasterHomeworkController::class, 'createHomeWork']);
+    Route::put('/start', [MasterHomeworkController::class, 'startHomework']);
+    Route::put('/end', [MasterHomeworkController::class, 'endHomework']);
 });

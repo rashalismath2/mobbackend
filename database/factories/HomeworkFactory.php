@@ -30,9 +30,10 @@ class HomeworkFactory extends Factory
             'onetime' => $this->faker->boolean($chanceOfGettingTrue = 50),
             'startDate' => Carbon::now(),
             'endDate' =>Carbon::now()->addDays(1),
-            'startTime' => Carbon::now(),
-            'endTime' => Carbon::now()->addMinutes(60),
+            'startTime' => Carbon::now()->toDateTimeString(),
+            'endTime' => Carbon::now()->toDateTimeString(),
             'status' => "queued",
+            'allow_late' =>  $this->faker->boolean($chanceOfGettingTrue = 50),
             'number_of_questions' => $this->faker->randomDigit(),
         ];
     }

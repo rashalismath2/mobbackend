@@ -20,10 +20,11 @@ class CreateHomeworkTable extends Migration
             $table->boolean("onetime");
             $table->date("startDate");
             $table->date("endDate")->nullable();
-            $table->time("startTime")->nullable();
-            $table->time("endTime")->nullable();   
+            $table->datetime("startTime")->nullable();
+            $table->datetime("endTime")->nullable();   
             $table->string("status")->default("queued");
-            $table->interger("number_of_questions");
+            $table->boolean("allow_late");
+            $table->integer("number_of_questions");
             $table->timestamps();
         });
     }
