@@ -24,10 +24,6 @@ use App\Http\Controllers\Master\HomeworkController as MasterHomeworkController ;
 */
 
 
-Route::post('master/files', function (Request $request) {
-    error_log(print_r($request->all(), true));
-});
-
 Route::group([
     'prefix' => 'auth/user'
 ], function () {

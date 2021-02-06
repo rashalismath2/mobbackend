@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Master;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
-
 use Validator;
 use Exception;
 use Illuminate\Support\MessageBag;
@@ -110,6 +109,7 @@ class HomeworkController extends Controller
             "title"=>"required|string|min:2",
             "note"=>"required|string|min:4",
             "onetime"=>"required|boolean",
+            "allow_late"=>"required|boolean",
             "startDate"=>"required|date",
             "endDate"=>"required",
             "startTime"=>"required",
@@ -118,7 +118,7 @@ class HomeworkController extends Controller
             "groupCount"=>"required|numeric",
             "number_of_questions"=>"required|numeric",
         ]);
-
+ 
        
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
@@ -135,7 +135,8 @@ class HomeworkController extends Controller
 
 
         //validate if the sent groups are belongs to authenticated user
-        try {
+        try { 
+
             for ($i=1; $i <=$request->groupCount; $i++) { 
                 if ($request->has('group_'.$i)) {
                     $groupId=$request["group_".$i];
@@ -155,13 +156,19 @@ class HomeworkController extends Controller
         $homework->title=$request->title;
         $homework->note=$request->note;
         $homework->onetime=$request->onetime;
-        $homework->startDate=$request->startDate;
-        $homework->endDate=$request->endDate;
-        $homework->startTime=$request->startTime;
-        $homework->endTime=$request->endTime;
+        $homework->startDate=Carbon::parse($request->startDate);
+        $homework->endDate=Carbon::parse($request->endDate);
+        $homework->startTime=Carbon::parse($request->startTime);
+        $homework->endTime=Carbon::parse($request->endTime);
+        $homework->allow_late=$request->allow_late;
+        $homework->number_of_questions=$request->number_of_questions;
         $homework->status="queued";
-
-        $homework->save();
+    
+        try {
+            $homework->save();
+        } catch (Exception $e) {
+            return response()->json($e->getMessage(), 422);
+        }
 
         //save files
         $this->saveFile($request,$homework->id,$message_bag);
@@ -169,9 +176,8 @@ class HomeworkController extends Controller
         if(count($message_bag)!=0){
             return response()->json($message_bag,422);
         }
-        
-        
-        return response()->json(["Message"=>"homework created"],200);
+  
+        return response()->json(["Message"=>"homework created","data"=>$homework],200);
      
     }
 
@@ -181,23 +187,25 @@ class HomeworkController extends Controller
 
         $files=[];
         $storeHomeworkAttachemnts=[];
-
+      
         for ($i=1; $i <=$request->fileCount; $i++) { 
             $file_name="file_".$i;
-
+           
             try {
                 if(!$request->hasFile($file_name)){
-                    throw new \Exception("The file format does not support");
+                    throw new \Exception("The file doesnt exists");
                 }
                else{
                     $fileNameWithExtenstion=$request->file($file_name)->getClientOriginalName();
                     $fileName=pathinfo($fileNameWithExtenstion,PATHINFO_FILENAME);
-                    $extension=$request->file($file_name)->getClientOriginalExtension();
+                    
+                    $nameArray=explode(".",$fileNameWithExtenstion);
+                    $count=count(explode(".",$fileNameWithExtenstion));
+                    $extension=$nameArray[$count-1];
                }
 
             } catch (Exception $e) {
                 if(count($files)!=0){
-                    
                     Storage::delete($files);
                 }
                 if(count($storeHomeworkAttachemnts)!=0){
@@ -216,7 +224,6 @@ class HomeworkController extends Controller
                 }
             } catch (Exception $e) {
                 if(count($files)!=0){
-                    
                     Storage::delete($files);
                 }
                 if(count($storeHomeworkAttachemnts)!=0){
@@ -232,6 +239,7 @@ class HomeworkController extends Controller
 
             try {
                 $path=$request->file($file_name)->storeAs($filePath,$fileNameToStore);
+
                 array_push($files,$filePath."/".$fileNameToStore);
             } catch (Exception $e) {
                 if(count($files)!=0){
@@ -264,13 +272,11 @@ class HomeworkController extends Controller
                 $message_bag->add("errors",$e->getMessage());
                 break; 
             }
-
         }
 
         if(count($message_bag)!=0){
             return response()->json($message_bag,422);
         }
-
         $this->storeHomeworksGroups($request,
                $homeworkId,
                 $storeHomeworkAttachemnts,$message_bag);
@@ -287,12 +293,11 @@ class HomeworkController extends Controller
                 $group=new HomeworksGroups();
     
                 $group->group_id=$groupId;
-                $group->homework_id=$homework->id;
+                $group->homework_id=$homeworkId;
                 $group->save();
     
                 array_push($savedGroups,$group->id);
             } catch (Exception $e) {
-    
                 if(count($files)!=0){
                     Storage::delete($files);
                 }
