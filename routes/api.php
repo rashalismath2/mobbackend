@@ -22,8 +22,11 @@ use App\Http\Controllers\Master\HomeworkController as MasterHomeworkController ;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+// Route::post('master/a', function (Request $request) {
 
-
+//     error_log(print_r($request->a,true));
+//     return response()->json(200);
+// });
 Route::group([
     'prefix' => 'auth/user'
 ], function () {

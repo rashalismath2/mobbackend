@@ -28,6 +28,8 @@ class HomeworkController extends Controller
         $homeworks=Homework::whereHas("HomeworkGroups.group",function($query){
                             $query->where("master_id",auth()->user()->id);
                         })
+                        ->with("HomeworkAttachments")
+                        ->with("HomeworkGroups.group")
                         ->get();
 
         return response()->json($homeworks,200);
@@ -176,8 +178,16 @@ class HomeworkController extends Controller
         if(count($message_bag)!=0){
             return response()->json($message_bag,422);
         }
-  
-        return response()->json(["Message"=>"homework created","data"=>$homework],200);
+
+        $attachments=$homework->HomeworkAttachments;
+        $homeworkgroups=$homework->HomeworkGroups()->with("group")->get();
+      
+
+        return response()->json(["Message"=>"homework created",
+            "homework"=>$homework,
+            "attachments"=>$attachments,
+            "homeworkgroups"=>$homeworkgroups,
+        ],200);
      
     }
 
@@ -236,6 +246,7 @@ class HomeworkController extends Controller
             $fileNameToStore=$fileName."_".time().".".$extension;
 
             $filePath="public/attachments/".date("Y-m-d");
+            $filePathToDB="storage/attachments/".date("Y-m-d");
 
             try {
                 $path=$request->file($file_name)->storeAs($filePath,$fileNameToStore);
@@ -257,7 +268,7 @@ class HomeworkController extends Controller
                 $homeworkAttachemnts=new HomeworkAttachments();
                 $homeworkAttachemnts->file_type=$extension;
                 $homeworkAttachemnts->homework_id=$homeworkId;
-                $homeworkAttachemnts->file_path=$filePath."/".$fileNameToStore;
+                $homeworkAttachemnts->file_path=$filePathToDB."/".$fileNameToStore;
                 
                 $homeworkAttachemnts->save();
                 array_push($storeHomeworkAttachemnts,$homeworkAttachemnts->id);
