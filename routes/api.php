@@ -89,6 +89,7 @@ Route::group([
     Route::get('/', [MasterHomeworkController::class, 'getAllHomeworks']);
     Route::post('/', [MasterHomeworkController::class, 'createHomeWork']);
     Route::post('/{id}', [MasterHomeworkController::class, 'updateHomeWork']);
+    Route::delete('/{id}', [MasterHomeworkController::class, 'deleteHomeWork']);
     Route::put('/start', [MasterHomeworkController::class, 'startHomework']);
     Route::put('/end', [MasterHomeworkController::class, 'endHomework']);
 });

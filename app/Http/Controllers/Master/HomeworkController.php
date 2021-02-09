@@ -28,6 +28,7 @@ class HomeworkController extends Controller
         $homeworks=Homework::whereHas("HomeworkGroups.group",function($query){
                             $query->where("master_id",auth()->user()->id);
                         })
+                        ->where("deleted",0)
                         ->with("HomeworkAttachments")
                         ->with("HomeworkGroups.group")
                         ->get();
@@ -103,6 +104,71 @@ class HomeworkController extends Controller
             return response()->json($message_bag, 422);
         }
 
+    }
+    public function deleteHomeWork(Request $request,$id,MessageBag $message_bag){
+      // homework should be vreated by auth user
+        $homework=Homework::where("id",$id)
+        ->with("HomeworkAttachments")
+        ->with("HomeworkGroups.group",function($query){
+            $query->where('master_id',auth()->user()->id);
+        })
+        ->first();
+
+        if($homework==null){
+            $message_bag->add("errors","Could'nt process this request");
+            return  response()->json($message_bag, 422);
+        }
+        else if($homework->status=="on"){
+            $message_bag->add("errors","Could'nt process this request with the status on");
+            return  response()->json($message_bag, 422);
+        }
+
+        
+        //delete files
+        try {
+            $deleteFiles=[];
+
+            $ha=$homework->HomeworkAttachments;
+            foreach ($ha as $attachment) {
+                $attachment_path=str_replace("storage","public",$attachment->file_path);
+                array_push($deleteFiles,$attachment_path);
+            }
+            Storage::delete($deleteFiles);
+            $homework->HomeworkAttachments()->delete();
+           
+        } catch (Exception $e) {
+            return response()->json($e->getMessage(), 422);
+        }
+
+        if($homework->status=="ended"){   
+            //delete groups 
+            try {
+                $hg=$homework->HomeworkGroups;
+                foreach ($hg as $group) {
+                    $group->deleted=1;
+                    $group->update();
+                }
+                $homework->deleted=1;
+                $homework->update();
+
+                return response()->json(["Message"=>"Homework deleted"], 200);
+
+            } catch (Exception $e) {
+                return response()->json($e->getMessage(), 422);
+            }
+        }
+        else{
+            try {
+                $homework->HomeworkGroups()->delete();
+                $homework->delete();
+
+                return response()->json(["Message"=>"Homework deleted"], 200);
+
+            } catch (Exception $e) {
+                return response()->json($e->getMessage(), 422);
+            }
+        }
+        
     }
 
     public function createHomeWork(Request $request,MessageBag $message_bag){
