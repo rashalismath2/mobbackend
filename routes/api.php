@@ -88,6 +88,7 @@ Route::group([
 ], function () {
     Route::get('/', [MasterHomeworkController::class, 'getAllHomeworks']);
     Route::post('/', [MasterHomeworkController::class, 'createHomeWork']);
+    Route::post('/{id}', [MasterHomeworkController::class, 'updateHomeWork']);
     Route::put('/start', [MasterHomeworkController::class, 'startHomework']);
     Route::put('/end', [MasterHomeworkController::class, 'endHomework']);
 });

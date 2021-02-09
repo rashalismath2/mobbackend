@@ -190,7 +190,156 @@ class HomeworkController extends Controller
         ],200);
      
     }
+    
+    public function updateHomeWork(Request $request,$id,MessageBag $message_bag){
 
+        $validator=Validator::make($request->all(),[
+            "title"=>"required|string|min:2",
+            "note"=>"required|string|min:4",
+            "onetime"=>"required|boolean",
+            "allow_late"=>"required|boolean",
+            "startDate"=>"required|date",
+            "endDate"=>"required",
+            "startTime"=>"required",
+            "endTime"=>"required",
+            "fileCount"=>"required|numeric",
+            "groupCount"=>"required|numeric",
+            "number_of_questions"=>"required|numeric",
+            "removedOriginalHomeworkFilesCount"=>"required|numeric",
+            "removedOriginalHomeworkGroupsCount"=>"required|numeric",
+        ]);
+ 
+       
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+        // homework should be vreated by auth user
+        $homework=Homework::where("id",$id)
+            ->withCount("HomeworkAttachments")
+            ->withCount("HomeworkGroups")
+            ->with("HomeworkGroups.group",function($query){
+                $query->where('master_id',auth()->user()->id);
+            })
+            ->first();
+
+        if($homework==null){
+            $message_bag->add("errors","Could'nt process this request");
+            return  response()->json($message_bag, 422);
+        }
+        else if($$homework!="queued"){
+            $message_bag->add("errors","Unprocessable state of the homework");
+            return  response()->json($message_bag, 422);
+        }
+
+        //if user had removed all the files then check if user has atleast added a new file
+        if(
+            $homework->homework_attachments_count==$request->removedOriginalHomeworkFilesCount
+        ){
+            try {
+                if(!$request->hasFile("file_1") ){
+                    throw new \Exception("Homeworks must include atleast one file");
+                }
+            } catch (Exception $e) {
+                return response()->json($e->getMessage(), 422);
+            }
+        }
+
+        //if user had removed all the groups then check if user has atleast added a new group
+        if(
+            $homework->homework_groups_count==$request->removedOriginalHomeworkGroupsCount
+        ){
+            try {
+                if(!$request->hasFile("group_1") ){
+                    throw new \Exception("Homeworks must include atleast one group");
+                }
+            } catch (Exception $e) {
+                return response()->json($e->getMessage(), 422);
+            }
+        }
+    
+        //validate if the sent groups are belongs to authenticated user
+        try { 
+            for ($i=1; $i <=$request->groupCount; $i++) { 
+                if ($request->has('group_'.$i)) {
+                    $groupId=$request["group_".$i];
+                    //if user doesnt have requesting group(auth user should have requesting group created by him)
+                    $group=Group::where("id",$groupId)->where("master_id",auth()->user()->id)->firstOrFail();
+                }
+                else{
+                    throw new \Exception("The group input are invalid");
+                }
+            }
+        } catch (Exception $e) {
+            return response()->json($e->getMessage(), 422);
+        }
+
+
+        
+        $homework->title=$request->title;
+        $homework->note=$request->note;
+        $homework->onetime=$request->onetime;
+        $homework->startDate=Carbon::parse($request->startDate);
+        $homework->endDate=Carbon::parse($request->endDate);
+        $homework->startTime=Carbon::parse($request->startTime);
+        $homework->endTime=Carbon::parse($request->endTime);
+        $homework->allow_late=$request->allow_late;
+        $homework->number_of_questions=$request->number_of_questions;
+         
+        try {
+            $homework->update();
+        } catch (Exception $e) {
+            return response()->json($e->getMessage(), 422);
+        }
+
+
+        //delete files
+        try {
+            $deleteFiles=[];
+            for ($i=1; $i<=$request->removedOriginalHomeworkFilesCount ; $i++) { 
+                $name="removed_homework_file_".$i;
+                $attachment=HomeworkAttachments::find($request->$name);
+                $attachment_path=str_replace("storage","public",$attachment->file_path);
+                array_push($deleteFiles,$attachment_path);
+                $attachment->delete();
+            }
+            Storage::delete($deleteFiles);
+
+        } catch (Exception $e) {
+            return response()->json($e->getMessage(), 422);
+        }
+
+        //delete groups 
+        try {
+            for ($i=1; $i<=$request->removedOriginalHomeworkGroupsCount ; $i++) { 
+                $name="removed_homework_group_".$i;
+                $group=HomeworksGroups::find($request->$name);
+                $group->delete();
+            }
+
+        } catch (Exception $e) {
+            return response()->json($e->getMessage(), 422);
+        }
+        
+
+        //save files
+        $this->saveFile($request,$id,$message_bag);
+  
+        if(count($message_bag)!=0){
+            return response()->json($message_bag,422);
+        }
+
+
+        $attachments=$homework->HomeworkAttachments;
+        $homeworkgroups=$homework->HomeworkGroups()->with("group")->get();
+      
+
+        return response()->json(["Message"=>"homework created",
+            "homework"=>$homework,
+            "attachments"=>$attachments,
+            "homeworkgroups"=>$homeworkgroups,
+        ],200);
+     
+    }
 
 
     protected function saveFile($request,$homeworkId,$message_bag){
