@@ -292,7 +292,7 @@ class HomeworkController extends Controller
             $message_bag->add("errors","Could'nt process this request");
             return  response()->json($message_bag, 422);
         }
-        else if($$homework!="queued"){
+        else if($homework->status!="queued"){
             $message_bag->add("errors","Unprocessable state of the homework");
             return  response()->json($message_bag, 422);
         }
@@ -306,19 +306,21 @@ class HomeworkController extends Controller
                     throw new \Exception("Homeworks must include atleast one file");
                 }
             } catch (Exception $e) {
+                error_log($e->getMessage());
                 return response()->json($e->getMessage(), 422);
             }
         }
-
+  
         //if user had removed all the groups then check if user has atleast added a new group
         if(
             $homework->homework_groups_count==$request->removedOriginalHomeworkGroupsCount
         ){
             try {
-                if(!$request->hasFile("group_1") ){
+                if(!$request->has("group_1")){
                     throw new \Exception("Homeworks must include atleast one group");
                 }
             } catch (Exception $e) {
+                error_log($e->getMessage());
                 return response()->json($e->getMessage(), 422);
             }
         }
@@ -336,6 +338,7 @@ class HomeworkController extends Controller
                 }
             }
         } catch (Exception $e) {
+            error_log($e->getMessage());
             return response()->json($e->getMessage(), 422);
         }
 
@@ -350,55 +353,57 @@ class HomeworkController extends Controller
         $homework->endTime=Carbon::parse($request->endTime);
         $homework->allow_late=$request->allow_late;
         $homework->number_of_questions=$request->number_of_questions;
-         
-        try {
-            $homework->update();
-        } catch (Exception $e) {
-            return response()->json($e->getMessage(), 422);
-        }
 
 
         //delete files
         try {
             $deleteFiles=[];
-            for ($i=1; $i<=$request->removedOriginalHomeworkFilesCount ; $i++) { 
+
+            for ($i=1; $i<=$request->removedOriginalHomeworkFilesCount; $i++) { 
                 $name="removed_homework_file_".$i;
-                $attachment=HomeworkAttachments::find($request->$name);
+                $attachment=HomeworkAttachments::find($request[$name]);
                 $attachment_path=str_replace("storage","public",$attachment->file_path);
                 array_push($deleteFiles,$attachment_path);
                 $attachment->delete();
             }
             Storage::delete($deleteFiles);
-
         } catch (Exception $e) {
+            error_log($e->getMessage());
             return response()->json($e->getMessage(), 422);
         }
 
         //delete groups 
         try {
-            for ($i=1; $i<=$request->removedOriginalHomeworkGroupsCount ; $i++) { 
+            for ($i=1; $i<=$request->removedOriginalHomeworkGroupsCount; $i++) { 
                 $name="removed_homework_group_".$i;
-                $group=HomeworksGroups::find($request->$name);
+                $group=HomeworksGroups::find($request[$name]);
                 $group->delete();
             }
-
         } catch (Exception $e) {
+            error_log($e->getMessage());
             return response()->json($e->getMessage(), 422);
         }
         
 
         //save files
         $this->saveFile($request,$id,$message_bag);
-  
+
         if(count($message_bag)!=0){
             return response()->json($message_bag,422);
+        }
+
+                 
+        try {
+            $homework->update();
+        } catch (Exception $e) {
+            error_log($e->getMessage());
+            return response()->json($e->getMessage(), 422);
         }
 
 
         $attachments=$homework->HomeworkAttachments;
         $homeworkgroups=$homework->HomeworkGroups()->with("group")->get();
       
-
         return response()->json(["Message"=>"homework created",
             "homework"=>$homework,
             "attachments"=>$attachments,
@@ -436,6 +441,7 @@ class HomeworkController extends Controller
                 if(count($storeHomeworkAttachemnts)!=0){
                     HomeworkAttachments::destroy($storeHomeworkAttachemnts);
                 }
+                error_log($e->getMessage());
                 $message_bag->add("errors",$e->getMessage());
                 break; 
             }
@@ -454,6 +460,7 @@ class HomeworkController extends Controller
                 if(count($storeHomeworkAttachemnts)!=0){
                     HomeworkAttachments::destroy($storeHomeworkAttachemnts);
                 }
+                error_log($e->getMessage());
                 $message_bag->add("errors",$e->getMessage());
                 break; 
             }
@@ -474,7 +481,7 @@ class HomeworkController extends Controller
                 if(count($storeHomeworkAttachemnts)!=0){
                     HomeworkAttachments::destroy($storeHomeworkAttachemnts);
                 }
-
+                error_log($e->getMessage());
                 $message_bag->add("errors",$e->getMessage());
                 break; 
             }
@@ -494,7 +501,7 @@ class HomeworkController extends Controller
                 if(count($storeHomeworkAttachemnts)!=0){
                     HomeworkAttachments::destroy($storeHomeworkAttachemnts);
                 }
-
+                error_log($e->getMessage());
                 $message_bag->add("errors",$e->getMessage());
                 break; 
             }
@@ -533,7 +540,7 @@ class HomeworkController extends Controller
                 if(count($storeHomeworkAttachemnts)!=0){
                     HomeworkAttachments::destroy($savedGroups);
                 }
-    
+                error_log($e->getMessage());
                 $message_bag->add("errors",$e->getMessage());
                 break; 
             }

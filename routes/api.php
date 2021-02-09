@@ -24,7 +24,7 @@ use App\Http\Controllers\Master\HomeworkController as MasterHomeworkController ;
 */
 // Route::post('master/a', function (Request $request) {
 
-//     error_log(print_r($request->a,true));
+//     error_log(print_r($request->all(),true));
 //     return response()->json(200);
 // });
 Route::group([
